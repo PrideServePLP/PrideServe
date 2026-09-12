@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #1e293b;
+  --plp-navy: #1b365d;
+  --plp-navy-dark: #142844;
+  --plp-navy-light: #2a4a73;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-plp-navy: var(--plp-navy);
+  --color-plp-navy-dark: var(--plp-navy-dark);
+  --color-plp-navy-light: var(--plp-navy-light);
+  --color-plp-slate: #64748b;
+  --color-plp-slate-muted: #94a3b8;
+  --color-plp-slate-border: #e2e8f0;
+  --color-plp-slate-surface: #f8fafc;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* Offsets the shell so the development role switcher never covers the chrome. */
+.has-dev-toolbar body {
+  padding-top: 2.5rem;
+}
+
+.has-dev-toolbar .app-sidebar,
+.has-dev-toolbar .app-header {
+  top: 2.5rem;
+}

@@ -185,6 +185,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <AccessNotice />
           {children}
         </main>
+
+        <footer className="border-t border-plp-slate-border bg-white px-4 py-4 text-center md:px-6">
+          <p className="text-xs font-medium tracking-wide text-slate-500">
+            Built by Ian Wilbanks, Anthony Maysonet, and Nora Degner
+          </p>
+        </footer>
       </div>
     </div>
   );

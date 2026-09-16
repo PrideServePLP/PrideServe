@@ -186,9 +186,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
 
-        <footer className="border-t border-plp-slate-border bg-white px-4 py-4 text-center md:px-6">
-          <p className="text-xs font-medium tracking-wide text-slate-500">
-            Built by Ian Wilbanks, Anthony Maysonet, and Nora Degner
+        <footer className="mt-auto border-t border-plp-slate-border bg-plp-navy px-4 py-5 text-center md:px-6">
+          <p className="text-xs font-semibold uppercase tracking-wider text-white/60">
+            Built by
+          </p>
+          <p className="mt-1 text-sm font-medium text-white">
+            Ian Wilbanks · Anthony Maysonet · Nora Degner
           </p>
         </footer>
       </div>

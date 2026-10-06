@@ -25,7 +25,6 @@ export default function DevRoleSwitcher({
     document.cookie = next
       ? `${DEV_ROLE_COOKIE}=${next}; Path=/; Max-Age=86400; SameSite=Lax`
       : `${DEV_ROLE_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`;
-    // A full reload re-runs middleware so the current route is re-checked.
     window.location.reload();
   }
 

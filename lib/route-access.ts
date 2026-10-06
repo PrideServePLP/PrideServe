@@ -16,7 +16,6 @@ export type RouteGuard = {
   requireHonorSocietyMember?: boolean;
 };
 
-/** Sub-paths of /honor-societies that map to a specific society. */
 export const HONOR_SOCIETY_SLUGS: Record<string, HonorSociety> = {
   nhs: "NHS",
   njhs: "NJHS",
@@ -25,7 +24,6 @@ export const HONOR_SOCIETY_SLUGS: Record<string, HonorSociety> = {
   science: "Science National Honor Society",
 };
 
-// Order matters: the first matching prefix wins, so keep nested routes first.
 export const ROUTE_GUARDS: RouteGuard[] = [
   {
     prefix: "/admin/certification",
@@ -79,7 +77,6 @@ export function matchRouteGuard(pathname: string): RouteGuard | null {
   );
 }
 
-/** The society a path targets, e.g. /honor-societies/nhs -> "NHS". */
 export function honorSocietyForPath(pathname: string): HonorSociety | null {
   const slug = pathname.split("/")[2]?.toLowerCase();
   return slug ? (HONOR_SOCIETY_SLUGS[slug] ?? null) : null;

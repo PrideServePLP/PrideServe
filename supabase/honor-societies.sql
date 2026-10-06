@@ -1,11 +1,3 @@
--- ---------------------------------------------------------------------------
--- PrideServe — honor society portal + private assignment patch
---
--- Additive migration for projects where schema.sql was already applied.
--- Adds per-society targeting (honor_society) and the club-internal vs
--- community-external distinction (service_scope) to opportunities.
--- Safe to run more than once.
--- ---------------------------------------------------------------------------
 
 do $$
 begin
@@ -57,9 +49,6 @@ create index if not exists opportunities_assigned_student_idx
   on public.opportunities (assigned_student_id)
   where assigned_student_id is not null;
 
--- ---------------------------------------------------------------------------
--- Membership helper for the five named PLP societies
--- ---------------------------------------------------------------------------
 create or replace function public.user_in_society(p_user_id uuid, p_society text)
 returns boolean
 language sql
@@ -114,9 +103,6 @@ as $$
   );
 $$;
 
--- ---------------------------------------------------------------------------
--- Read policies rebuilt around honor_society
--- ---------------------------------------------------------------------------
 drop policy if exists opportunities_public_read_approved on public.opportunities;
 drop policy if exists opportunities_society_read_members on public.opportunities;
 drop policy if exists opportunities_honor_society_read on public.opportunities;

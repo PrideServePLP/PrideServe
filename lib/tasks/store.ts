@@ -18,7 +18,6 @@ const DEMO_SIGNUPS_KEY = "prideserve-demo-signups";
 
 type DemoReview = { status: OpportunityStatus; reviewNotes: string | null };
 
-/** `${opportunityId}:${studentId}` for every active registration. */
 const NO_SIGNUPS: string[] = [];
 
 let tasks: ServiceTask[] = SEED_TASKS;
@@ -59,7 +58,6 @@ export function signupKey(taskId: string, studentId: string): string {
   return `${taskId}:${studentId}`;
 }
 
-/** Stable snapshot for SSR and the first client render. */
 export function getSeedTasksSnapshot(): ServiceTask[] {
   return SEED_TASKS;
 }
@@ -120,7 +118,6 @@ function writeDemoOverlay(overlay: ServiceTask[]) {
   try {
     window.localStorage.setItem(DEMO_TASKS_KEY, JSON.stringify(overlay));
   } catch {
-    // Storage can be unavailable in private windows; the in-memory copy stands.
   }
 }
 
@@ -145,7 +142,6 @@ function writeDemoReview(id: string, review: DemoReview) {
     all[id] = review;
     window.localStorage.setItem(DEMO_REVIEWS_KEY, JSON.stringify(all));
   } catch {
-    // Storage can be unavailable in private windows; the in-memory copy stands.
   }
 }
 
@@ -168,15 +164,11 @@ function writeDemoSignups(next: string[]) {
   try {
     window.localStorage.setItem(DEMO_SIGNUPS_KEY, JSON.stringify(next));
   } catch {
-    // Storage can be unavailable in private windows; the in-memory copy stands.
   }
 }
 
 async function loadFromSupabase() {
   const supabase = createSupabaseClient();
-  // Wait for the persisted session so RLS can return this student's rows.
-  // A query fired before getSession() resolves looks like an anonymous user
-  // and comes back empty, which makes every Sign Up button look available.
   await supabase.auth.getSession();
 
   const [opportunityResult, studentResult] = await Promise.all([
@@ -241,12 +233,10 @@ function startHydration(): Promise<void> {
   return hydration;
 }
 
-/** Loads live data; concurrent callers share one in-flight request. */
 export function hydrateTasks(): Promise<void> {
   return startHydration();
 }
 
-/** Re-reads tasks and signups after login or a sign-up so the buttons stay honest. */
 export function refreshTasks(): Promise<void> {
   return startHydration();
 }
@@ -317,7 +307,6 @@ export async function createTask(input: NewTaskInput): Promise<ServiceTask> {
   return created;
 }
 
-/** Certification queue decision: approve and publish, or reject with feedback. */
 export async function reviewTask(
   id: string,
   status: Extract<OpportunityStatus, "approved" | "rejected">,
@@ -384,10 +373,6 @@ function notifyRequesterOfReview(task: ServiceTask, notes: string | null) {
   ]);
 }
 
-/**
- * Reserves a student's spot and alerts the task owner. Mirrors the
- * `notify_on_signup` database trigger so the demo behaves like production.
- */
 export async function signUpForTask(
   task: ServiceTask,
   studentId: string,
@@ -404,15 +389,12 @@ export async function signUpForTask(
       .from("event_signups")
       .insert({ opportunity_id: task.id, student_id: studentId });
 
-    // 23505 is the unique index on an active (opportunity, student) pair —
-    // the student is already reserved, which is the outcome we wanted.
     if (error && error.code !== "23505") {
       throw new Error(error.message);
     }
 
     signups = signups.includes(key) ? signups : [...signups, key];
     emit();
-    // The database trigger already wrote both rows; this just re-reads them.
     await emitNotifications([]);
     await refreshTasks();
     return;

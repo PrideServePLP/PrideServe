@@ -54,7 +54,6 @@ export function useStudentDirectory(): StudentOption[] {
   return students;
 }
 
-/** Keys of the form `${opportunityId}:${studentId}` for active registrations. */
 export function useSignups(): string[] {
   const signups = useSyncExternalStore(
     subscribeToTasks,
@@ -66,7 +65,6 @@ export function useSignups(): string[] {
   return signups;
 }
 
-/** The signed-in profile (or active dev persona) reduced to access fields. */
 export function useTaskViewer(): TaskViewer {
   const { profile } = useAuth();
   if (!profile) {

@@ -1,9 +1,5 @@
 import type { ServiceTask, StudentOption } from "./types";
 
-/**
- * Local demo content used until Supabase credentials are configured.
- * Creator and assignee ids line up with the development role personas.
- */
 const STUDENT_ID = "dev-student_nhs_beta";
 const TEACHER_ID = "dev-teacher_advisor";
 const ORG_ID = "dev-outside_org";
@@ -84,7 +80,6 @@ function task(seed: SeedTask): ServiceTask {
 }
 
 export const SEED_TASKS: ServiceTask[] = [
-  // --- Public general feed -------------------------------------------------
   task({
     id: "seed-book-fair",
     title: "Library Book Fair Setup",
@@ -188,7 +183,6 @@ export const SEED_TASKS: ServiceTask[] = [
     createdBy: TEACHER_ID,
   }),
 
-  // --- Honor society chapters ----------------------------------------------
   task({
     id: "seed-nhs-induction",
     title: "NHS Induction Ceremony Setup",
@@ -350,7 +344,6 @@ export const SEED_TASKS: ServiceTask[] = [
     createdBy: TEACHER_ID,
   }),
 
-  // --- Private assignments --------------------------------------------------
   task({
     id: "seed-private-lab-inventory",
     title: "Private: Biology Lab Inventory Audit",
@@ -384,7 +377,6 @@ export const SEED_TASKS: ServiceTask[] = [
     recurrencePattern: "weekly",
   }),
 
-  // --- Awaiting Tech Manager certification ----------------------------------
   task({
     id: "seed-pending-habitat",
     title: "Habitat Build Day — Framing Crew",

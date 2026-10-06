@@ -1,10 +1,6 @@
 import type { HonorSociety } from "@/lib/database.types";
 import type { HourLog } from "./types";
 
-/**
- * Service hour thresholds. Adjust these to match the current PLP handbook and
- * each chapter's bylaws; everything downstream reads from here.
- */
 export const GRADUATION_HOURS_REQUIRED = 40;
 
 export const SOCIETY_HOURS_REQUIRED: Record<HonorSociety, number> = {
@@ -28,10 +24,6 @@ function sum(logs: HourLog[]): number {
   return logs.reduce((total, log) => total + log.hoursLogged, 0);
 }
 
-/**
- * Graduation counts every verified hour; each society counts only the hours
- * attributed to that chapter.
- */
 export function buildProgressTracks(
   logs: HourLog[],
   honorSocieties: HonorSociety[],

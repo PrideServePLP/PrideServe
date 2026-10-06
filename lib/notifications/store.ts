@@ -29,7 +29,6 @@ export function getNotificationsSnapshot(): AppNotification[] {
   return notifications;
 }
 
-/** Stable snapshot for SSR and the first client render. */
 export function getSeedNotificationsSnapshot(): AppNotification[] {
   return SEED_NOTIFICATIONS;
 }
@@ -70,7 +69,6 @@ function writeDemo(list: AppNotification[]) {
   try {
     window.localStorage.setItem(DEMO_KEY, JSON.stringify(list));
   } catch {
-    // Storage can be unavailable in private windows; the in-memory copy stands.
   }
 }
 
@@ -96,13 +94,11 @@ async function runHydration() {
   emit();
 }
 
-/** Loads live data once per page session; safe to call from every component. */
 export function hydrateNotifications(): Promise<void> {
   hydration ??= runHydration();
   return hydration;
 }
 
-/** Re-reads from the server; used after an action fires database triggers. */
 export async function refreshNotifications(): Promise<void> {
   if (!isSupabaseConfigured()) {
     return;
@@ -111,13 +107,6 @@ export async function refreshNotifications(): Promise<void> {
   emit();
 }
 
-/**
- * Fan-out entry point for the notification engine.
- *
- * Against Supabase the rows are written by database triggers, so this only
- * pulls the fresh list. In demo mode there is no database, so the same events
- * are synthesized locally from the caller's descriptions.
- */
 export async function emitNotifications(
   inputs: NewNotification[],
 ): Promise<void> {

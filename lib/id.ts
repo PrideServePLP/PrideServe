@@ -1,4 +1,3 @@
-/** Stable-enough client id for demo records created before Supabase is wired up. */
 export function newId(prefix: string): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();

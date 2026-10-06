@@ -1,9 +1,3 @@
--- ---------------------------------------------------------------------------
--- PrideServe — hour logging, verification pipeline, notification engine
---
--- Additive migration for projects where schema.sql was already applied.
--- Safe to run more than once.
--- ---------------------------------------------------------------------------
 
 do $$
 begin
@@ -15,9 +9,6 @@ begin
 end
 $$;
 
--- ---------------------------------------------------------------------------
--- hour_logs: manual entries, proof, and supervisor contact details
--- ---------------------------------------------------------------------------
 alter table public.hour_logs
   alter column opportunity_id drop not null;
 
@@ -76,18 +67,12 @@ create index if not exists hour_logs_pending_review_idx
   on public.hour_logs (created_at)
   where status = 'pending';
 
--- ---------------------------------------------------------------------------
--- notifications: category and deep link
--- ---------------------------------------------------------------------------
 alter table public.notifications
   add column if not exists category public.notification_category not null default 'general';
 
 alter table public.notifications
   add column if not exists href text;
 
--- ---------------------------------------------------------------------------
--- Verification pipeline
--- ---------------------------------------------------------------------------
 create or replace function public.review_hour_logs(
   p_log_ids uuid[],
   p_status public.hour_log_status,
@@ -124,13 +109,6 @@ begin
 end;
 $$;
 
--- ---------------------------------------------------------------------------
--- Notification engine
---
--- Notifications are written by triggers rather than by clients: students are
--- not allowed to insert rows for other users, but signing up must still alert
--- the task owner. Definer rights let the trigger bypass that insert policy.
--- ---------------------------------------------------------------------------
 create or replace function public.notify_user(
   p_user_id uuid,
   p_title text,
@@ -148,7 +126,6 @@ as $$
   where p_user_id is not null;
 $$;
 
--- 1. A student signs up for a task.
 create or replace function public.notify_on_signup()
 returns trigger
 language plpgsql
@@ -188,7 +165,6 @@ create trigger notify_on_signup
   for each row
   execute function public.notify_on_signup();
 
--- 2. A Tech Manager certifies (or rejects) an outside request.
 create or replace function public.notify_on_opportunity_review()
 returns trigger
 language plpgsql
@@ -229,7 +205,6 @@ create trigger notify_on_opportunity_review
   for each row
   execute function public.notify_on_opportunity_review();
 
--- 3. A teacher approves or rejects logged hours.
 create or replace function public.notify_on_hour_log_review()
 returns trigger
 language plpgsql

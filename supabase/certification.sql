@@ -1,10 +1,3 @@
--- ---------------------------------------------------------------------------
--- PrideServe — outside org submissions + certification queue patch
---
--- Additive migration for projects where schema.sql was already applied.
--- Adds intake fields for external organizations and the review columns the
--- Tech Manager certification queue writes to. Safe to run more than once.
--- ---------------------------------------------------------------------------
 
 do $$
 begin
@@ -52,9 +45,6 @@ create index if not exists opportunities_pending_review_idx
   on public.opportunities (event_date)
   where status = 'pending_certification';
 
--- ---------------------------------------------------------------------------
--- Certification queue action
--- ---------------------------------------------------------------------------
 create or replace function public.review_opportunity(
   p_opportunity_id uuid,
   p_status public.opportunity_status,

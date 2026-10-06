@@ -1,6 +1,5 @@
 import type { AppNotification } from "./types";
 
-/** Local demo content used until Supabase credentials are configured. */
 export const SEED_NOTIFICATIONS: AppNotification[] = [
   {
     id: "notif-seed-hours-verified",

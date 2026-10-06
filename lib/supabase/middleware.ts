@@ -40,7 +40,6 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   ]);
 }
 
-/** Redirects to the public feed when the profile cannot open the requested route. */
 function guardRoute(
   request: NextRequest,
   profile: AccessProfile | null,
@@ -177,7 +176,6 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(redirectUrl);
     }
 
-    // A dev persona overrides the signed-in profile so guards can be exercised locally.
     const accessProfile: AccessProfile = devProfile ?? {
       role: profile.role,
       isTechManager: profile.is_tech_manager,

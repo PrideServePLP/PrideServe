@@ -2,7 +2,6 @@ import type { HourLog } from "./types";
 
 const STUDENT_ID = "dev-student_nhs_beta";
 
-/** Local demo content used until Supabase credentials are configured. */
 export const SEED_HOUR_LOGS: HourLog[] = [
   {
     id: "log-seed-food-pantry",

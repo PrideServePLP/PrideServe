@@ -3,11 +3,6 @@ import type { HourLog } from "@/lib/hours/types";
 import { signupKey } from "@/lib/tasks/store";
 import type { ServiceTask, StudentOption } from "@/lib/tasks/types";
 
-/**
- * Where a student stands with the verification office. Precedence runs
- * pending → rejected → verified → none so the badge always shows the state
- * that needs attention first.
- */
 export type VerificationStatus = "pending" | "rejected" | "verified" | "none";
 
 export const VERIFICATION_LABELS: Record<VerificationStatus, string> = {
@@ -22,9 +17,7 @@ export type RosterEntry = {
   verifiedHours: number;
   pendingHours: number;
   verificationStatus: VerificationStatus;
-  /** Tasks the student reserved a spot for. */
   signedUpCount: number;
-  /** Reserved tasks that already have a verified hour log behind them. */
   completedCount: number;
   logs: HourLog[];
 };
@@ -121,7 +114,6 @@ export function filterRoster(
   });
 }
 
-/** Grade levels actually present on the roster, ordered 9th through 12th. */
 export function gradeLevelsIn(students: StudentOption[]): string[] {
   const grades = new Set(
     students

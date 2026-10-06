@@ -1,4 +1,3 @@
--- Additive auth/onboarding patch if schema.sql was already applied.
 alter table public.users
   add column if not exists onboarding_completed boolean not null default false;
 
@@ -25,5 +24,3 @@ as $$
   select lower(coalesce(p_email, '')) like '%@pinelakeprep.org';
 $$;
 
--- Re-run the handle_new_user, enforce_role_email_domain, protect_user_privileged_columns,
--- and complete_onboarding definitions from supabase/schema.sql after this patch.

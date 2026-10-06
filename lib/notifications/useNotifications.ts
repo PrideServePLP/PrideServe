@@ -9,7 +9,6 @@ import {
 } from "./store";
 import type { AppNotification } from "./types";
 
-/** Notifications addressed to one user, newest first. */
 export function useNotifications(userId: string | null): AppNotification[] {
   const all = useSyncExternalStore(
     subscribeToNotifications,

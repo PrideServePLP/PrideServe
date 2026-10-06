@@ -1,15 +1,3 @@
-/**
- * Populates a Supabase project with mock PLP data for local testing.
- *
- *   npm run seed
- *
- * Requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY. The service
- * role key bypasses RLS, so this only ever belongs in a development project —
- * never point it at production.
- *
- * Apply supabase/schema.sql first (copy the whole file into the SQL editor).
- * Re-running this seed is safe: every row uses a fixed id and is upserted.
- */
 import { createClient } from "@supabase/supabase-js";
 import type {
   Database,
@@ -30,17 +18,7 @@ const password = process.env.SEED_PASSWORD ?? "PrideServe!Dev2026";
 
 if (url === "" || serviceRoleKey === "") {
   console.error(
-    [
-      "Missing Supabase credentials.",
-      "",
-      "Add these to .env.local (the service role key is under",
-      "Project Settings → API → service_role in the Supabase dashboard):",
-      "",
-      "  NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co",
-      "  SUPABASE_SERVICE_ROLE_KEY=<service-role-key>",
-      "",
-      "Optional: SEED_PASSWORD=<shared password for the test accounts>",
-    ].join("\n"),
+    "Need NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local",
   );
   process.exit(1);
 }
@@ -49,7 +27,6 @@ const supabase = createClient<Database>(url, serviceRoleKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
-/** Throws with context instead of letting a Supabase error pass silently. */
 function must(step: string, result: { error: { message: string } | null }) {
   if (result.error) {
     throw new Error(`${step}: ${result.error.message}`);
@@ -63,9 +40,6 @@ function at(dayOffset: number, hourUtc: number): string {
   return date.toISOString();
 }
 
-// ---------------------------------------------------------------------------
-// 1. Users
-// ---------------------------------------------------------------------------
 type SeedUser = {
   key: string;
   email: string;
@@ -85,8 +59,6 @@ const SEED_USERS: SeedUser[] = [
     role: "admin",
   },
   {
-    // A teacher rather than an admin, so the tech-manager bypass in the route
-    // guards gets exercised on its own.
     key: "techManager",
     email: "tech@pinelakeprep.org",
     fullName: "Priya Raman",
@@ -246,6 +218,33 @@ const SEED_USERS: SeedUser[] = [
     honorSocieties: ["NJHS", "Spanish Honor Society"],
     classes: ["E", "F"],
   },
+  {
+    key: "ian",
+    email: "ian.wilbanks@pinelakeprep.org",
+    fullName: "Ian Wilbanks",
+    role: "student",
+    gradeLevel: "12th",
+    honorSocieties: ["NHS", "Beta Club"],
+    classes: ["A", "C", "E"],
+  },
+  {
+    key: "anthony",
+    email: "anthony.maysonet@pinelakeprep.org",
+    fullName: "Anthony Maysonet",
+    role: "student",
+    gradeLevel: "12th",
+    honorSocieties: ["NHS"],
+    classes: ["B", "D"],
+  },
+  {
+    key: "nora",
+    email: "nora.degner@pinelakeprep.org",
+    fullName: "Nora Degner",
+    role: "student",
+    gradeLevel: "12th",
+    honorSocieties: ["Spanish Honor Society", "NHS"],
+    classes: ["C", "F"],
+  },
 ];
 
 async function existingAuthUsers(): Promise<Map<string, string>> {
@@ -282,8 +281,6 @@ async function seedUsers(): Promise<Record<string, string>> {
         email: user.email,
         password,
         email_confirm: true,
-        // handle_new_user() reads this to pick the initial role, which keeps
-        // the school-domain check happy for staff accounts.
         user_metadata: { full_name: user.fullName, intended_role: user.role },
       });
       if (error || !data.user) {
@@ -323,9 +320,6 @@ async function seedUsers(): Promise<Record<string, string>> {
   return ids;
 }
 
-// ---------------------------------------------------------------------------
-// 2. Opportunities
-// ---------------------------------------------------------------------------
 type SeedOpportunity = {
   id: string;
   title: string;
@@ -409,7 +403,6 @@ const SEED_OPPORTUNITIES: SeedOpportunity[] = [
     requiredVolunteers: 20,
     createdByKey: "outsideOrg",
     organizationName: "Lakeside Food Bank",
-    // Left unreviewed on purpose so the certification queue has work waiting.
     status: "pending_certification",
   },
   {
@@ -617,9 +610,6 @@ async function seedOpportunities(userIds: Record<string, string>) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// 3. Signups and hour logs
-// ---------------------------------------------------------------------------
 const OPP = {
   pantry: "11111111-1111-4111-8111-000000000001",
   bingo: "11111111-1111-4111-8111-000000000002",
@@ -685,6 +675,13 @@ const SEED_SIGNUPS: Array<{
   { id: signupId(32), opportunityId: OPP.trail, studentKey: "eli", status: "registered" },
   { id: signupId(33), opportunityId: OPP.reading, studentKey: "nia", status: "registered" },
   { id: signupId(34), opportunityId: OPP.garden, studentKey: "avery", status: "registered" },
+  { id: signupId(35), opportunityId: OPP.pantry, studentKey: "ian", status: "completed" },
+  { id: signupId(36), opportunityId: OPP.tutoring, studentKey: "ian", status: "registered" },
+  { id: signupId(37), opportunityId: OPP.cleanup, studentKey: "ian", status: "registered" },
+  { id: signupId(38), opportunityId: OPP.bookFair, studentKey: "anthony", status: "completed" },
+  { id: signupId(39), opportunityId: OPP.tickets, studentKey: "anthony", status: "registered" },
+  { id: signupId(40), opportunityId: OPP.spanish, studentKey: "nora", status: "completed" },
+  { id: signupId(41), opportunityId: OPP.reading, studentKey: "nora", status: "registered" },
 ];
 
 type SeedHourLog = {
@@ -1057,6 +1054,62 @@ const SEED_HOUR_LOGS: SeedHourLog[] = [
     reviewNotes:
       "Paid work is not community service. Log a partner task from the feed instead.",
   },
+  {
+    id: logId(26),
+    studentKey: "ian",
+    opportunityId: OPP.pantry,
+    activityTitle: "NHS Food Pantry Sort & Pack",
+    honorSociety: "NHS",
+    serviceDate: at(-14, 14),
+    hours: 2.5,
+    reflection:
+      "Packed weekend bags and helped load the delivery van with the NHS crew.",
+    supervisorName: "Dana Whitfield",
+    supervisorEmail: "dana@lakesidefoodbank.org",
+    status: "verified",
+    verifiedByKey: "advisor",
+  },
+  {
+    id: logId(27),
+    studentKey: "ian",
+    opportunityId: OPP.tutoring,
+    activityTitle: "In-School Peer Tutoring — Algebra I",
+    honorSociety: null,
+    serviceDate: at(-3, 15),
+    hours: 1,
+    reflection: "Helped two Algebra I students through linear-equation review.",
+    supervisorName: "Mateo Alvarez",
+    supervisorEmail: "m.alvarez@pinelakeprep.org",
+    status: "pending",
+  },
+  {
+    id: logId(28),
+    studentKey: "anthony",
+    opportunityId: OPP.bookFair,
+    activityTitle: "Library Book Fair Setup",
+    honorSociety: "NHS",
+    serviceDate: at(-5, 19),
+    hours: 1.5,
+    reflection: "Built the display tables and labeled new titles by grade.",
+    supervisorName: "Mateo Alvarez",
+    supervisorEmail: "m.alvarez@pinelakeprep.org",
+    status: "verified",
+    verifiedByKey: "teacher2",
+  },
+  {
+    id: logId(29),
+    studentKey: "nora",
+    opportunityId: OPP.spanish,
+    activityTitle: "Spanish I Study Hall Support",
+    honorSociety: "Spanish Honor Society",
+    serviceDate: at(-8, 16),
+    hours: 1,
+    reflection: "Ran conversation practice with four Spanish I students.",
+    supervisorName: "Morgan Rivera",
+    supervisorEmail: "advisor@pinelakeprep.org",
+    status: "verified",
+    verifiedByKey: "advisor",
+  },
 ];
 
 async function seedSignupsAndLogs(userIds: Record<string, string>) {
@@ -1119,9 +1172,6 @@ async function seedSignupsAndLogs(userIds: Record<string, string>) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// 4. Notifications
-// ---------------------------------------------------------------------------
 const SEED_NOTIFICATIONS = [
   {
     id: "44444444-4444-4444-8444-000000000001",
@@ -1206,7 +1256,6 @@ async function seedNotifications(userIds: Record<string, string>) {
   console.log(`  notifications: ${SEED_NOTIFICATIONS.length} delivered`);
 }
 
-// ---------------------------------------------------------------------------
 async function main() {
   console.log(`Seeding ${url}\n`);
 

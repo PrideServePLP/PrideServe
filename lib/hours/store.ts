@@ -37,7 +37,6 @@ export function getHourLogsSnapshot(): HourLog[] {
   return logs;
 }
 
-/** Stable snapshot for SSR and the first client render. */
 export function getSeedHourLogsSnapshot(): HourLog[] {
   return SEED_HOUR_LOGS;
 }
@@ -90,7 +89,6 @@ function writeDemoOverlay(overlay: HourLog[]) {
   try {
     window.localStorage.setItem(DEMO_LOGS_KEY, JSON.stringify(overlay));
   } catch {
-    // Storage can be unavailable in private windows; the in-memory copy stands.
   }
 }
 
@@ -114,7 +112,6 @@ function writeDemoReviews(entries: Record<string, DemoReview>) {
     const all = { ...readDemoReviews(), ...entries };
     window.localStorage.setItem(DEMO_REVIEWS_KEY, JSON.stringify(all));
   } catch {
-    // Storage can be unavailable in private windows; the in-memory copy stands.
   }
 }
 
@@ -155,7 +152,6 @@ async function runHydration() {
   emit();
 }
 
-/** Loads live data once per page session; safe to call from every component. */
 export function hydrateHourLogs(): Promise<void> {
   hydration ??= runHydration();
   return hydration;
@@ -210,10 +206,6 @@ export async function createHourLog(
   return created;
 }
 
-/**
- * Verification pipeline decision. Accepts many ids so the approvals table can
- * settle a bulk selection in one call.
- */
 export async function reviewHourLogs(
   ids: string[],
   status: Extract<HourLogStatus, "verified" | "rejected">,

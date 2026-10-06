@@ -1,17 +1,4 @@
--- ---------------------------------------------------------------------------
--- PrideServe — let the service role write rows on behalf of other users
---
--- The domain triggers derive student_id, status, and privileged user columns
--- from auth.uid(). That is correct for end users but makes `npm run seed`
--- impossible, because a service-role connection has no auth.uid() at all.
---
--- Apply after schema.sql. Safe to run more than once.
--- ---------------------------------------------------------------------------
 
--- True when no end user is behind the statement, which under the existing
--- grants can only be a trusted server-side connection using the service role
--- key: anon holds no write grants on these tables, and authenticated always
--- carries an auth.uid().
 create or replace function public.is_service_actor()
 returns boolean
 language sql
@@ -22,7 +9,6 @@ $$;
 
 grant execute on function public.is_service_actor() to anon, authenticated;
 
--- users: allow seeding is_tech_manager and email
 create or replace function public.protect_user_privileged_columns()
 returns trigger
 language plpgsql
@@ -49,7 +35,6 @@ begin
 end;
 $$;
 
--- event_signups: allow seeding a signup for a named student
 create or replace function public.event_signups_enforce_domain()
 returns trigger
 language plpgsql
@@ -75,7 +60,6 @@ begin
 end;
 $$;
 
--- hour_logs: allow seeding logs already in a verified or rejected state
 create or replace function public.hour_logs_enforce_domain()
 returns trigger
 language plpgsql

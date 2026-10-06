@@ -17,7 +17,6 @@ export type OpportunityStatus =
   | "approved"
   | "rejected";
 
-/** Club-internal service hours vs hours served out in the community. */
 export type ServiceScope = "club_internal" | "community_external";
 
 export type RecurrencePattern = "daily" | "weekly" | "monthly";

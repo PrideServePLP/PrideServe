@@ -7,7 +7,6 @@ import type {
   ServiceScope,
 } from "@/lib/database.types";
 
-/** A row of `opportunities` in the shape the UI consumes. */
 export type ServiceTask = {
   id: string;
   title: string;
@@ -118,7 +117,6 @@ const MONTHS = [
   "Dec",
 ];
 
-/** Deterministic UTC formatting so server and client markup agree. */
 export function formatEventDate(iso: string): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) {

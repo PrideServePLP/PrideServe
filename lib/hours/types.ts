@@ -1,6 +1,5 @@
 import type { HonorSociety, HourLogStatus } from "@/lib/database.types";
 
-/** A row of `hour_logs` in the shape the UI consumes. */
 export type HourLog = {
   id: string;
   studentId: string;
@@ -50,7 +49,6 @@ const DATE_FORMAT = new Intl.DateTimeFormat("en-US", {
   timeZone: "UTC",
 });
 
-/** Fixed to UTC so the server and client render identical strings. */
 export function formatServiceDate(iso: string): string {
   return DATE_FORMAT.format(new Date(iso));
 }

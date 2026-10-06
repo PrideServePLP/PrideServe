@@ -1,15 +1,6 @@
--- PrideServe domain schema
--- Copy this entire file into the Supabase SQL editor and press Run.
--- Safe on a brand-new project and safe to re-run (it rebuilds from scratch).
 
 create extension if not exists "pgcrypto";
 
--- ---------------------------------------------------------------------------
--- Reset
--- ---------------------------------------------------------------------------
--- Only auth.users is guaranteed to exist on a first run, so that is the only
--- trigger dropped by name. Public tables, functions, and types use IF EXISTS
--- without argument types so missing objects do not abort the script.
 drop trigger if exists on_auth_user_created on auth.users;
 
 drop table if exists public.notifications cascade;
@@ -51,9 +42,6 @@ drop type if exists public.opportunity_location cascade;
 drop type if exists public.opportunity_category cascade;
 drop type if exists public.user_role cascade;
 
--- ---------------------------------------------------------------------------
--- Enumerations
--- ---------------------------------------------------------------------------
 create type public.user_role as enum (
   'student',
   'ta',
@@ -82,7 +70,6 @@ create type public.opportunity_status as enum (
   'rejected'
 );
 
--- Separates hours served inside a club from hours served in the community.
 create type public.service_scope as enum (
   'club_internal',
   'community_external'
@@ -106,7 +93,6 @@ create type public.hour_log_status as enum (
   'rejected'
 );
 
--- Drives the icon and grouping used by the in-app notification center.
 create type public.notification_category as enum (
   'signup',
   'certification',
@@ -114,9 +100,6 @@ create type public.notification_category as enum (
   'general'
 );
 
--- ---------------------------------------------------------------------------
--- Tables
--- ---------------------------------------------------------------------------
 create table public.users (
   id uuid primary key references auth.users (id) on delete cascade,
   email text not null,
@@ -184,7 +167,6 @@ create table public.event_signups (
   status public.signup_status not null default 'registered'
 );
 
--- opportunity_id is nullable so students can log hours served off-platform.
 create table public.hour_logs (
   id uuid primary key default gen_random_uuid(),
   student_id uuid not null references public.users (id) on delete cascade,
@@ -274,7 +256,6 @@ create index hour_logs_pending_review_idx
 create index notifications_user_unread_idx
   on public.notifications (user_id, is_read, created_at desc);
 
--- Honor-society membership values must match opportunity categories.
 alter table public.users
   add constraint users_honor_societies_allowed
   check (
@@ -287,9 +268,6 @@ alter table public.users
     ]::text[]
   );
 
--- ---------------------------------------------------------------------------
--- Helper functions (SECURITY DEFINER to avoid RLS recursion)
--- ---------------------------------------------------------------------------
 create or replace function public.is_admin_or_tech_manager()
 returns boolean
 language sql
@@ -370,7 +348,6 @@ as $$
   );
 $$;
 
--- Exact membership check for the five named PLP societies.
 create or replace function public.user_in_society(p_user_id uuid, p_society text)
 returns boolean
 language sql
@@ -387,7 +364,6 @@ as $$
     );
 $$;
 
--- Certification queue action. Only admins and tech managers may decide.
 create or replace function public.review_opportunity(
   p_opportunity_id uuid,
   p_status public.opportunity_status,
@@ -467,15 +443,7 @@ as $$
   );
 $$;
 
--- ---------------------------------------------------------------------------
--- Domain triggers
--- ---------------------------------------------------------------------------
 
--- True when no end user is behind the statement, which under the grants below
--- can only be a trusted server-side connection using the service role key
--- (anon has no write grants, and authenticated always carries an auth.uid()).
--- The domain triggers use this to leave caller-supplied columns alone so
--- scripts/seed.ts can write rows on behalf of other people.
 create or replace function public.is_service_actor()
 returns boolean
 language sql
@@ -799,12 +767,6 @@ create trigger hour_logs_enforce_domain
   for each row
   execute function public.hour_logs_enforce_domain();
 
--- ---------------------------------------------------------------------------
--- Verification pipeline
---
--- Bulk decision used by the /admin/approvals table. Runs as definer so a single
--- call can settle many students' logs without a round trip per row.
--- ---------------------------------------------------------------------------
 create or replace function public.review_hour_logs(
   p_log_ids uuid[],
   p_status public.hour_log_status,
@@ -841,13 +803,6 @@ begin
 end;
 $$;
 
--- ---------------------------------------------------------------------------
--- Notification engine
---
--- Notifications are written by triggers rather than by clients: students are
--- not allowed to insert rows for other users, but signing up must still alert
--- the task owner. Definer rights let the trigger bypass that insert policy.
--- ---------------------------------------------------------------------------
 create or replace function public.notify_user(
   p_user_id uuid,
   p_title text,
@@ -865,7 +820,6 @@ as $$
   where p_user_id is not null;
 $$;
 
--- 1. A student signs up for a task.
 create or replace function public.notify_on_signup()
 returns trigger
 language plpgsql
@@ -904,7 +858,6 @@ create trigger notify_on_signup
   for each row
   execute function public.notify_on_signup();
 
--- 2. A Tech Manager certifies (or rejects) an outside request.
 create or replace function public.notify_on_opportunity_review()
 returns trigger
 language plpgsql
@@ -944,7 +897,6 @@ create trigger notify_on_opportunity_review
   for each row
   execute function public.notify_on_opportunity_review();
 
--- 3. A teacher approves or rejects logged hours.
 create or replace function public.notify_on_hour_log_review()
 returns trigger
 language plpgsql
@@ -992,16 +944,12 @@ create trigger notify_on_hour_log_review
   for each row
   execute function public.notify_on_hour_log_review();
 
--- ---------------------------------------------------------------------------
--- Row Level Security
--- ---------------------------------------------------------------------------
 alter table public.users enable row level security;
 alter table public.opportunities enable row level security;
 alter table public.event_signups enable row level security;
 alter table public.hour_logs enable row level security;
 alter table public.notifications enable row level security;
 
--- users: self-service profiles; tech managers and admins manage global rosters
 create policy users_select_self
   on public.users
   for select
@@ -1049,7 +997,6 @@ create policy users_admin_tech_manager_delete
   to authenticated
   using (public.is_admin_or_tech_manager());
 
--- opportunities: public feed, honor-society gating, private assignments
 create policy opportunities_public_read_approved
   on public.opportunities
   for select
@@ -1061,7 +1008,6 @@ create policy opportunities_public_read_approved
     and not public.is_honor_society_category(category)
   );
 
--- Society-tagged tasks are readable only by students on that society's roster.
 create policy opportunities_society_read_members
   on public.opportunities
   for select
@@ -1141,7 +1087,6 @@ create policy opportunities_delete_admin_tech_manager
   to authenticated
   using (public.is_admin_or_tech_manager());
 
--- event_signups
 create policy event_signups_select_own
   on public.event_signups
   for select
@@ -1190,7 +1135,6 @@ create policy event_signups_update_staff
   using (public.is_staff() or public.is_admin_or_tech_manager())
   with check (public.is_staff() or public.is_admin_or_tech_manager());
 
--- hour_logs
 create policy hour_logs_select_own
   on public.hour_logs
   for select
@@ -1226,7 +1170,6 @@ create policy hour_logs_update_staff_verify
   using (public.is_staff() or public.is_admin_or_tech_manager())
   with check (public.is_staff() or public.is_admin_or_tech_manager());
 
--- notifications
 create policy notifications_select_own
   on public.notifications
   for select
@@ -1246,9 +1189,6 @@ create policy notifications_insert_staff
   to authenticated
   with check (public.is_staff() or public.is_admin_or_tech_manager());
 
--- ---------------------------------------------------------------------------
--- Grants
--- ---------------------------------------------------------------------------
 grant usage on schema public to anon, authenticated;
 
 grant select on table public.opportunities to anon, authenticated;

@@ -31,10 +31,6 @@ export function isSocietyMember(
   return Boolean(viewer?.honorSocieties.includes(society));
 }
 
-/**
- * Society tasks a member should see: approved, not privately assigned.
- * Private society tasks stay on the assignee's own feed.
- */
 export function societyTasks(
   tasks: ServiceTask[],
   society: HonorSociety,
@@ -47,10 +43,6 @@ export function societyTasks(
   );
 }
 
-/**
- * The open, school-wide feed: approved, not privately assigned, and not
- * limited to one honor society chapter.
- */
 export function publicFeedTasks(tasks: ServiceTask[]): ServiceTask[] {
   return tasks.filter(
     (task) =>
@@ -60,14 +52,12 @@ export function publicFeedTasks(tasks: ServiceTask[]): ServiceTask[] {
   );
 }
 
-/** Everything waiting on a Tech Manager decision, soonest event first. */
 export function pendingReviewTasks(tasks: ServiceTask[]): ServiceTask[] {
   return tasks
     .filter((task) => task.status === "pending_certification")
     .sort((a, b) => a.eventDate.localeCompare(b.eventDate));
 }
 
-/** Private requests targeted at one student. */
 export function tasksAssignedTo(
   tasks: ServiceTask[],
   studentId: string | null | undefined,
@@ -78,7 +68,6 @@ export function tasksAssignedTo(
   return tasks.filter((task) => task.assignedStudentId === studentId);
 }
 
-/** Everything a given creator posted, newest event first. */
 export function tasksCreatedBy(
   tasks: ServiceTask[],
   creatorId: string | null | undefined,

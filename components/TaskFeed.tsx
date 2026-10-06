@@ -25,7 +25,6 @@ const LOCATIONS: Array<"All" | OpportunityLocation> = [
   "out_of_school",
 ];
 
-/** Time of day and class block both live in the free-text block_time column. */
 function matchesTime(task: ServiceTask, time: (typeof TIMES)[number]) {
   if (time === "All") {
     return true;
